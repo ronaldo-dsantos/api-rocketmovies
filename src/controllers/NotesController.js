@@ -29,7 +29,7 @@ class NotesController{
     const { id } = request.params
 
     const note = await knex("notes").where({ id }).first() // Selecionando as notas onde o id seja iguar ao id informado e pegar a primeira
-    const tags = await knex("tags").where({ note_id: id }).orderBy("name") // Selecionando as tafs onde o note_id seja igual ao id informado e ordenar por nome
+    const tags = await knex("tags").where({ note_id: id }).orderBy("name") // Selecionando as tags onde o note_id seja igual ao id informado e ordenar por nome
 
     return response.json({ // Retornar um objeto despejando todas as notas e as tags
       ...note,
@@ -53,13 +53,36 @@ class NotesController{
     if (tags) { // Se foi informado uma tag faça a busca por tag
       const filterTags = tags.split(',').map(tag => tag) // convertendo a tags de um texto simples para um vetor, realizado um map para pegar só a tag
       
-      notes = await knex("tags").whereIn("name", filterTags) // Busque na tabela notes e compare os nomes com os nomes informados no vetor
+      notes = await knex("tags")
+      .select([
+        "notes.id",
+        "notes.title",
+        "notes.user_id"
+      ])
+      .where("notes.user_id", user_id)
+      .whereLike("notes.title", `%${title}%`)
+      .whereIn("name", filterTags) // Busque na tabela notes e compare os nomes com os nomes informados no vetor
+      .innerJoin("notes", "notes.id", "tags.note_id") // Realizando busca em duas tabelas usando o innerJoin
+      .orderBy("notes.title")
 
     } else { // Se não foi informado uma tag faça a busca por notas
-      notes = await knex("notes").where({ user_id, }).whereLike("title", `%${title}%`).orderBy("title") // Busque na tabela notes onde o user id seja igual ao informado e onde o titulo contenha a palavra informada e ordene por título
+      notes = await knex("notes")
+      .where({ user_id, })
+      .whereLike("title", `%${title}%`)
+      .orderBy("title") // Busque na tabela notes onde o user id seja igual ao informado e onde o titulo contenha a palavra informada e ordene por título
     }
+
+    const userTags = await knex("tags").where({ user_id }) // Buscando na tabela tags as tags que pertencem ao user_id informado
+    const notesWithTags = notes.map(note => { // Juntando as notas e as tags
+      const noteTags = userTags.filter(tag => tag.note_id === note.id)
+      
+      return {
+        ...note,
+        tags: noteTags
+      }
+    })
     
-    return response.json(notes)  
+    return response.json(notesWithTags)  
   }
 }
 

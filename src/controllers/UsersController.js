@@ -2,15 +2,14 @@ const { hash, compare } = require("bcryptjs") // Importando o hash e o compare d
 
 const AppError = require("../utils/AppError") // Importando o AppError
 
-const sqliteConnection = require("../database/sqlite") // Importando o sqliteConnection
+const knex = require("../database/knex")
 
 class UsersControllers { // UsersControllers criado através de casse e não de uma função, porque uma classe pode ter várias funções o que vai nos atender melhor nesse caso
   
   async create(request, response) { // Controller create
     const { name, email , password } = request.body
 
-    const database = await sqliteConnection() // Realizando a conexão com o banco de dados
-    const checkUserExists = await database.get("SELECT * FROM users WHERE email = (?)", [email]) // Realizando uma consulta no banco de dados para verificar se o e-mail informado já existe
+    const [ checkUserExists ] = await knex("users").where({ email }) // Verificando no banco de dados se o e-mail informado já existe
 
     if (checkUserExists){ // Se o usuário existir, faça
       throw new AppError("Este e-mail já está em uso.") // Tratando a exceção pelo AppError
@@ -18,7 +17,7 @@ class UsersControllers { // UsersControllers criado através de casse e não de 
 
     const hashedPassword = await hash(password, 8) // Criando uma senha criptografada com fator 8 de complexidade
 
-    await database.run("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [name, email, hashedPassword]) // Inserindo os dados de usuário no banco de dados
+    await knex("users").insert({ name, email, password: hashedPassword }) // Inserindo os dados de usuário no banco de dados
 
     return response.status(201).json() 
   }

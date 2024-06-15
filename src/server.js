@@ -1,6 +1,6 @@
 require("express-async-errors") // Importando o express async errors que é a bibliteca que instalamos para lidar com os erros
 
-const migrationsRun = require("./database/sqlite/migrations") // Importando o arquivo do banco de dados
+//const migrationsRun = require("./database/sqlite/migrations") // Importando o arquivo do banco de dados
 
 const AppError = require("./utils/AppError") // Importando o AppError
 
@@ -8,7 +8,7 @@ const express = require("express") // Importando o express
 
 const routes = require("./routes") // Importando o arquivo de rotas
 
-migrationsRun() // Executando o banco de dados 
+//migrationsRun() // Executando o banco de dados 
 
 const app = express() // Inicializando o express
 
@@ -23,7 +23,6 @@ app.use((error, request, response, next) => { // Middleware para capturar e trat
       message: error.message
     })
   }
-
 
   console.error(error)
 
