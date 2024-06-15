@@ -2,11 +2,11 @@ const { hash, compare } = require("bcryptjs") // Importando o hash e o compare d
 
 const AppError = require("../utils/AppError") // Importando o AppError
 
-const knex = require("../database/knex")
+const knex = require("../database/knex") // Importando o knex
 
 class UsersControllers { // UsersControllers criado através de casse e não de uma função, porque uma classe pode ter várias funções o que vai nos atender melhor nesse caso
   
-  async create(request, response) { // Controller create
+  async create(request, response) { 
     const { name, email , password } = request.body
 
     const [ checkUserExists ] = await knex("users").where({ email }) // Verificando no banco de dados se o e-mail informado já existe
@@ -22,18 +22,17 @@ class UsersControllers { // UsersControllers criado através de casse e não de 
     return response.status(201).json() 
   }
 
-  async update(request, response) { // Controler update
+  async update(request, response) { 
     const { name, email, password, old_password } = request.body // Armazenando o nome e o e-mail do corpo da requisição
-    const { id } = request.params // Armazenando o id do parametro
+    const { id } = request.params // Armazenando o id informando por parametro
 
-    const database =  await sqliteConnection() // Realizando a conexão com o banco de dados
-    const user = await database.get("SELECT * FROM users WHERE id = (?)", [ id ]) // Selecionando o usuário que contenha o id informado
+    const [ user ] = await knex("users").where({ id }) // Selecionando o usuário que contenha o id informado
 
     if (!user) { // Se o usuário não existir, faça...
       throw new AppError("Usuário não encontrado.") // Tratando a exceção caso o usuário não seja encontrado
     }
 
-    const userWithUpdatedEmail = await database.get("SELECT * FROM users WHERE email = (?)", [email]) // Selecionando o e-mail informando para verificar de já existe no banco de dados
+    const [ userWithUpdatedEmail ] = await knex("users").where({ email }) // // Selecionando o e-mail informando para verificar de já existe no banco de dados
 
     if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) { // Se o email informado existir e se o id desse e-mail for diferente do id informado, faça...
       throw new AppError("Este e-mail já está em uso.")
@@ -56,7 +55,11 @@ class UsersControllers { // UsersControllers criado através de casse e não de 
       user.password = await hash(password, 8)//Se a senha conferiu, atualizar o user.password para a nova senha e criptografando a nova senha
     }
 
-    await database.run(`UPDATE users SET name = ?, email = ?, password = ?, updated_at = DATETIME('now') WHERE id = ?`, [user.name, user.email, user.password, id]) // Atualizando os dados do usuário no banco de dados
+    await knex("users").where({ id }).update({ // Atualizando os dados do usuário no banco de dados
+      name: user.name, 
+      email: user.email, 
+      password: user.password, 
+      updated_at: knex.fn.now() })
 
     return response.json() // Retornando uma resposta de sucesso
   }

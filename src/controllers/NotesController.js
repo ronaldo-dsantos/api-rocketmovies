@@ -1,14 +1,21 @@
 const knex = require("../database/knex")
+const AppError = require("../utils/AppError")
 
 class NotesController{
   async create(request, response){
     const { title, description, rating, tags } = request.body
     const { user_id } = request.params
 
+    const ratingIsNumber = Math.round(rating) 
+
+    if (ratingIsNumber < 1 || ratingIsNumber > 5 || isNaN(ratingIsNumber)) {
+      throw new AppError("Informe uma nota de 1 a 5.")      
+    }  
+    
     const [ note_id ] = await knex("notes").insert({ // Inserindo a nota no banco de dados e armazenando o note_id da nota criada, estamos colocando ele dentro de um array porque o knex está devolvendo o note_id dentro de um array
       title,
       description,
-      rating,
+      rating: ratingIsNumber,
       user_id
     })
 
@@ -74,7 +81,7 @@ class NotesController{
 
     const userTags = await knex("tags").where({ user_id }) // Buscando na tabela tags as tags que pertencem ao user_id informado
     const notesWithTags = notes.map(note => { // Juntando as notas e as tags
-      const noteTags = userTags.filter(tag => tag.note_id === note.id)
+    const noteTags = userTags.filter(tag => tag.note_id === note.id)
       
       return {
         ...note,
