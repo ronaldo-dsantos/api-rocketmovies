@@ -1,4 +1,4 @@
-const { hash, compare } = require("bcryptjs") // Importando o hash e o compare do bcryptjs
+const { hash, compare } = require("bcryptjs")
 
 const AppError = require("../utils/AppError") // Importando o AppError
 
