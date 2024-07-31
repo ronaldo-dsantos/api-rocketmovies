@@ -4,7 +4,7 @@ const AppError = require("../utils/AppError")
 class NotesController {
   async create(request, response) {
     const { title, description, rating, tags } = request.body
-    const { user_id } = request.params
+    const user_id = request.user.id
 
     const ratingIsNumber = Math.round(rating)
 
@@ -53,7 +53,8 @@ class NotesController {
   }
 
   async index(request, response) {
-    const { user_id, title, tags } = request.query
+    const { title, tags } = request.query
+    const user_id = request.user.id
 
     let notes
 
@@ -74,7 +75,7 @@ class NotesController {
 
     } else { // Se não foi informado uma tag faça a busca por notas
       notes = await knex("notes")
-        .where({ user_id, })
+        .where({ user_id })
         .whereLike("title", `%${title}%`)
         .orderBy("title") // Busque na tabela notes onde o user id seja igual ao informado e onde o titulo contenha a palavra informada e ordene por título
     }
