@@ -3,11 +3,11 @@ const { Router } = require("express")
 const UsersControllers = require("../controllers/UsersController")
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated")
 
-const usersRoutes = Router() // Inicializando o Router do express
+const usersRoutes = Router() 
 
-const usersControllers = new UsersControllers() // Instanciando o UsersControllers, como ele é uma classe, precisamos alocar ele na memória para que póssamos utilizá-la
+const usersControllers = new UsersControllers() 
 
-usersRoutes.post("/", usersControllers.create) // Ao ser acessada a rota de usuários, está direcionando para a classe usersController e acessando o método create
-usersRoutes.put("/", ensureAuthenticated, usersControllers.update) // Rota de usuários acessada pelo método put, pegando um id por parametro e acessando o método update
+usersRoutes.post("/", usersControllers.create) 
+usersRoutes.put("/", ensureAuthenticated, usersControllers.update) 
 
-module.exports = usersRoutes // Exportando o usersRoutes para que o server.js possa utilizá-lo
+module.exports = usersRoutes 
