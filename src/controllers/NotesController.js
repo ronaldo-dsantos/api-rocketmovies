@@ -36,9 +36,14 @@ class NotesController {
     const { id } = request.params
 
     const note = await knex("notes").where({ id }).first() 
-    const tags = await knex("tags").where({ note_id: id }).orderBy("name") 
+    const tags = await knex("tags").where({ note_id: id }).orderBy("name")
+    const [user] = await knex("users").where({ id: note.user_id }) 
+
+    const { name, avatar } = user
 
     return response.json({ 
+      name,
+      avatar,
       ...note,
       tags
     })
