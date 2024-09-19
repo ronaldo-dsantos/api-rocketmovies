@@ -1,7 +1,7 @@
 const knex = require("../database/knex")
 const AppError = require("../utils/AppError")
 
-class NotesController {
+class MoviesController {
   async create(request, response) {
     const { title, description, rating, tags } = request.body
     const user_id = request.user.id
@@ -100,4 +100,4 @@ class NotesController {
   }
 }
 
-module.exports = NotesController
+module.exports = MoviesController
