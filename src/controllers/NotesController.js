@@ -12,14 +12,14 @@ class NotesController {
       throw new AppError("Informe uma nota de 1 a 5.")
     }
 
-    const [note_id] = await knex("notes").insert({ 
+    const [note_id] = await knex("notes").insert({
       title,
       description,
       rating: ratingIsNumber,
       user_id
     })
 
-    const tagsInsert = tags.map(name => { 
+    const tagsInsert = tags.map(name => {
       return {
         note_id,
         user_id,
@@ -27,7 +27,7 @@ class NotesController {
       }
     })
 
-    await knex("tags").insert(tagsInsert) 
+    await knex("tags").insert(tagsInsert)
 
     return response.json()
   }
@@ -35,13 +35,13 @@ class NotesController {
   async show(request, response) {
     const { id } = request.params
 
-    const note = await knex("notes").where({ id }).first() 
+    const note = await knex("notes").where({ id }).first()
     const tags = await knex("tags").where({ note_id: id }).orderBy("name")
-    const [user] = await knex("users").where({ id: note.user_id }) 
+    const [user] = await knex("users").where({ id: note.user_id })
 
     const { name, avatar } = user
 
-    return response.json({ 
+    return response.json({
       name,
       avatar,
       ...note,
@@ -52,7 +52,7 @@ class NotesController {
   async delete(request, response) {
     const { id } = request.params
 
-    await knex("notes").where({ id }).delete() 
+    await knex("notes").where({ id }).delete()
 
     return response.json()
   }
@@ -63,8 +63,8 @@ class NotesController {
 
     let notes
 
-    if (tags) { 
-      const filterTags = tags.split(',').map(tag => tag) 
+    if (tags) {
+      const filterTags = tags.split(',').map(tag => tag)
 
       notes = await knex("tags")
         .select([
@@ -74,20 +74,20 @@ class NotesController {
         ])
         .where("notes.user_id", user_id)
         .whereLike("notes.title", `%${title}%`)
-        .whereIn("name", filterTags) 
+        .whereIn("name", filterTags)
         .innerJoin("notes", "notes.id", "tags.note_id")
-        .groupBy("notes.id") 
+        .groupBy("notes.id")
         .orderBy("notes.title")
 
-    } else { 
+    } else {
       notes = await knex("notes")
         .where({ user_id })
         .whereLike("title", `%${title}%`)
-        .orderBy("title")  
+        .orderBy("title")
     }
 
-    const userTags = await knex("tags").where({ user_id }) 
-    const notesWithTags = notes.map(note => { 
+    const userTags = await knex("tags").where({ user_id })
+    const notesWithTags = notes.map(note => {
       const noteTags = userTags.filter(tag => tag.note_id === note.id)
 
       return {
