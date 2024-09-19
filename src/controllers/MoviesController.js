@@ -32,6 +32,7 @@ class MoviesController {
     return response.json()
   }
 
+
   async show(request, response) {
     const { id } = request.params
 
