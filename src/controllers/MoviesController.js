@@ -35,16 +35,16 @@ class MoviesController {
   async show(request, response) {
     const { id } = request.params
 
-    const movie = await knex("movies").where({ id }).first()
-    const tags = await knex("tags").where({ movie_id: id }).orderBy("name")
-    const [user] = await knex("users").where({ id: movie.user_id })
+    const movieWithUser = await knex("movies")
+      .select("users.name", "users.avatar", "movies.*")
+      .where("movies.id", id)
+      .innerJoin("users", "users.id", "movies.user_id",)
+      .first();
 
-    const { name, avatar } = user
+    const tags = await knex("tags").where({ movie_id: id }).orderBy("name")
 
     return response.json({
-      name,
-      avatar,
-      ...movie,
+      ...movieWithUser,
       tags
     })
   }
